@@ -34,6 +34,10 @@
 //   saes32.decs    |   x     |         | SAES_DEC_EN     
 //   saes32.decsm   |   x     |         | SAES_DEC_EN     
 //
+
+`include "../AES32/sboxes.v"
+`include "../AES32/riscv_crypto_fu_sboxes.v"
+
 module riscv_crypto_fu_saes32 #(
 parameter SAES_DEC_EN = 1            // Enable saes32 decrypt instructions.
 )(
@@ -49,10 +53,10 @@ input  wire         op_saes32_decs , // Decrypt SubBytes
 input  wire         op_saes32_decsm, // Decrypt SubBytes + MixColumn
 
 output wire [ 31:0] rd             , // output destination register value.
-output wire         ready            // Compute finished?
+output wire         ready         ,   // Compute finished?
 
 // ---- taint wires ---- 
-input  wire         valid_t          , 
+input  wire valid_t          , 
 input  wire rs1_t            ,
 input  wire rs2_t            , 
 input  wire bs_t             , 
@@ -63,7 +67,7 @@ input  wire         op_saes32_decs_t ,
 input  wire         op_saes32_decsm_t, 
 
 output wire rd_t             ,
-output wire         ready_t           
+output wire ready_t           
 // ---- end taint wires ---- 
 );
 
@@ -93,12 +97,12 @@ assign     bytes_in_t  =  rs2_t             ;
 
 wire sel_byte_t     = bytes_in_t            ;
 // CHECK OR SHADOW LOGIC
-wire       dec_t          = (op_saes32_decs  || op_saes32_decsm) && SAES_DEC_EN;
-wire       mix_t          =  op_saes32_encsm || op_saes32_decsm      ;
+wire       dec_t          = (op_saes32_decs_t  || op_saes32_decsm_t) && SAES_DEC_EN_t;
+wire       mix_t          =  op_saes32_encsm_t || op_saes32_decsm_t     ;
 
 wire sbox_fwd_out_t     ;
 wire sbox_inv_out_t     ;
-wire sbox_out_t         = (dec ? sbox_inv_out_t : sbox_fwd_out_t) | dec_t;
+wire sbox_out_t         = (dec ? sbox_inv_out_t : sbox_fwd_out_t) || dec_t;
 // ---- End Taint Logic ----
 
 
@@ -124,7 +128,7 @@ function [7:0] xtimeN;
 
 endfunction
 
-wire [ 7:0] mix_b3 =       xtimeN(sbox_out, (dec ? 11  : 3))            ;
+wire [ 7:0] mix_b3 =       xtimeN(sbox_out, (dec ? 11  : 3))            ; //may need to add taint prop for each mix and then make result based on that
 wire [ 7:0] mix_b2 = dec ? xtimeN(sbox_out, (           13)) : sbox_out ;
 wire [ 7:0] mix_b1 = dec ? xtimeN(sbox_out, (            9)) : sbox_out ;
 wire [ 7:0] mix_b0 =       xtimeN(sbox_out, (dec ? 14  : 2))            ;
@@ -142,11 +146,11 @@ wire [31:0] rotated     =
 assign      rd          = rotated ^ rs1;
 
 // ---- Taint Logic ----
-wire result_mix_t  = sbox_out_t;
-wire result_t      = result_mix_t;
+wire result_mix_t  = sbox_out_t || dec_t;
+wire result_t      = result_mix_t || mix_t;
 
-wire rotated_t     = result_t;
-assign      rd_t          = rotated_t | rs1_t;
+wire rotated_t     = result_t || bs_t;
+assign      rd_t          = rotated_t || rs1_t;
 // ---- End Taint Logic ----
 
 //

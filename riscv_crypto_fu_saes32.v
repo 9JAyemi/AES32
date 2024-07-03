@@ -34,6 +34,9 @@
 //   saes32.decs    |   x     |         | SAES_DEC_EN     
 //   saes32.decsm   |   x     |         | SAES_DEC_EN     
 //
+`include "../AES32/sboxes.v"
+`include "../AES32/riscv_crypto_fu_sboxes.v"
+
 module riscv_crypto_fu_saes32 #(
 parameter SAES_DEC_EN = 1            // Enable saes32 decrypt instructions.
 )(
