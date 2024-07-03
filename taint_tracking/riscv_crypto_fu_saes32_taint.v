@@ -91,18 +91,37 @@ wire [7:0] sbox_inv_out     ;
 wire [7:0] sbox_out         = dec ? sbox_inv_out : sbox_fwd_out ;
 
 // ---- Taint Logic ----
+
+function OR_t;
+    input op1;
+    input op2;
+    input op1_t;
+    input op2_t;
+
+    OR_t = (~op1 & op2_t) | (~op2 & op1_t) | (op1_t & op2_t);
+endfunction
+
+function AND_t;
+    input op1;
+    input op2;
+    input op1_t;
+    input op2_t;
+
+    AND_t = (op1_t & op2_t) | (op1_t & ~op2_t & op2) | (~op1_t & op2_t & op1);
+endfunction
+
 wire bytes_in_t ;
-assign     ready_t        = valid_t                     ;
+assign     ready_t     = valid_t                     ;
 assign     bytes_in_t  =  rs2_t             ;
 
 wire sel_byte_t     = bytes_in_t            ;
-// CHECK OR SHADOW LOGIC
-wire       dec_t          = (op_saes32_decs_t  || op_saes32_decsm_t) && SAES_DEC_EN_t;
-wire       mix_t          =  op_saes32_encsm_t || op_saes32_decsm_t     ;
+
+wire       dec_t          = OR_t(op_saes32_decs,  op_saes32_decsm, op_saes32_decs_t, op_saes32_decsm_t) && SAES_DEC_EN;
+wire       mix_t          = OR_t(op_saes32_encsm, op_saes32_decsm, op_saes32_encsm_t, op_saes32_decsm_t);
 
 wire sbox_fwd_out_t     ;
 wire sbox_inv_out_t     ;
-wire sbox_out_t         = (dec ? sbox_inv_out_t : sbox_fwd_out_t) || dec_t;
+wire sbox_out_t         = (dec ? sbox_inv_out_t : sbox_fwd_out_t) || (dec_t && (sbox_inv_out != sbox_fwd_out));
 // ---- End Taint Logic ----
 
 
@@ -128,7 +147,7 @@ function [7:0] xtimeN;
 
 endfunction
 
-wire [ 7:0] mix_b3 =       xtimeN(sbox_out, (dec ? 11  : 3))            ; //may need to add taint prop for each mix and then make result based on that
+wire [ 7:0] mix_b3 =       xtimeN(sbox_out, (dec ? 11  : 3))            ; 
 wire [ 7:0] mix_b2 = dec ? xtimeN(sbox_out, (           13)) : sbox_out ;
 wire [ 7:0] mix_b1 = dec ? xtimeN(sbox_out, (            9)) : sbox_out ;
 wire [ 7:0] mix_b0 =       xtimeN(sbox_out, (dec ? 14  : 2))            ;
@@ -147,10 +166,10 @@ assign      rd          = rotated ^ rs1;
 
 // ---- Taint Logic ----
 wire result_mix_t  = sbox_out_t || dec_t;
-wire result_t      = result_mix_t || mix_t;
+wire result_t      = (mix ? result_mix_t : sbox_out_t) || (mix_t && (result_mix_t != sbox_out_t));
 
-wire rotated_t     = result_t || bs_t;
-assign      rd_t          = rotated_t || rs1_t;
+wire rotated_t     = AND_t(result, bs, result_t, bs_t);
+assign rd_t         = rotated_t || rs1_t;
 // ---- End Taint Logic ----
 
 //
