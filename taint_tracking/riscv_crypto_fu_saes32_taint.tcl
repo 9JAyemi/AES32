@@ -1,4 +1,4 @@
-analyze -sv riscv_crypto_fu_seas32_taint.v
+analyze -sv riscv_crypto_fu_saes32_taint.v
 
 elaborate -top riscv_crypto_fu_saes32
 
