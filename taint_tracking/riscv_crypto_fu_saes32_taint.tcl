@@ -6,7 +6,7 @@ elaborate -top riscv_crypto_fu_saes32
 
 # check once the computation is finsihed that there is no information to the registar where data is stored
 assume {rs1_t == 1}
-assert{ready -> !rd_t}
+assert {ready -> !rd_t}
 
 
 # Set the time limit to 1 hour (3600 seconds)
