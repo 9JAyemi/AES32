@@ -3,7 +3,7 @@ analyze -sv riscv_crypto_fu_saes32_taint.v
 elaborate -top riscv_crypto_fu_saes32
 
 clock -none
-reset reset -non_resettable_regs 0
+reset -none
 
 
 # check once the computation is finsihed that there is no information to the registar where data is stored
