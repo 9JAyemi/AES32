@@ -195,6 +195,7 @@ riscv_crypto_aes_inv_sbox i_aes_sbox_inv (
 end else begin : saes32_dec_sbox_not_implemented
 
     assign sbox_inv_out = 8'b0;
+    assign sbox_inv_out_t = 0;
 
 end endgenerate // SAES_DEC_EN
 

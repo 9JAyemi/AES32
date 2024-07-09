@@ -298,6 +298,16 @@ input   [ 7:0] x
 
 endmodule
 
+//  riscv_crypto_sbox_aesi_top taint module
+module riscv_crypto_sbox_aesi_top_t(
+output  y_t   ,
+input   x_t
+);
+
+assign y_t = x_t;
+
+endmodule
+
 
 //
 //    bottom (outer) linear layer for AES^-1
@@ -343,6 +353,16 @@ input   [17:0] x
     assign    y[ 5] = t17 ^     t28;
     assign    y[ 6] = t26 ^     t29;
     assign    y[ 7] = t13 ^     t22;
+
+endmodule
+
+// riscv_crypto_sbox_aesi_out taint module
+module riscv_crypto_sbox_aesi_out_t(
+output  y_t    ,
+input   x_t
+);
+
+assign y_t = x_t;
 
 endmodule
 
@@ -473,10 +493,11 @@ module riscv_crypto_aes_inv_sbox (
     wire t2_t
 
     riscv_crypto_sbox_aesi_top top ( .y(t1), .x(in) );
-    riscv_crypto_sbox_aesi_top top_t(.y(t1), .x(in_t));
+    riscv_crypto_sbox_aesi_top_t top_t(.y(t1_t), .x(in_t));
     riscv_crypto_sbox_inv_mid mid  ( .y(t2), .x(t1) );
+    riscv_crypto_sbox_inv_mid_t mid_t  ( .y(t2_t), .x(t1_t) );
     riscv_crypto_sbox_aesi_out out ( .y(fx), .x(t2) );
-    riscv_crypto_sbox_aesi_out out_t ( .y(fxt), .x(t2));
+    riscv_crypto_sbox_aesi_out_t out_t ( .y(fx_t), .x(t2_t));
 
 endmodule
 
