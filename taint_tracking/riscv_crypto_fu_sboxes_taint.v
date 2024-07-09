@@ -490,7 +490,7 @@ module riscv_crypto_aes_inv_sbox (
     wire [20:0] t1;
     wire [17:0] t2;
     wire t1_t;
-    wire t2_t
+    wire t2_t;
 
     riscv_crypto_sbox_aesi_top top ( .y(t1), .x(in) );
     riscv_crypto_sbox_aesi_top_t top_t(.y(t1_t), .x(in_t));
