@@ -106,11 +106,11 @@ endmodule
 
 //  riscv_crypto_sbox_inv_mid taint module
 module riscv_crypto_sbox_inv_mid_t(
-input   [20:0] x_t    ,
-output  [17:0] y_t
+input    x   ,
+output   y
 );
 
-assign y_t = x_t;
+assign y = x;
 
 endmodule
 
@@ -175,11 +175,11 @@ endmodule
 
 // riscv_crypto_sbox_aes_top taint module
 module riscv_crypto_sbox_aes_top_t(
-input   x_t    ,
-output  y_t
+input   x    ,
+output  y
 );
 
-assign y_t = x_t;
+assign y = x;
 endmodule
 
 
@@ -233,10 +233,10 @@ endmodule
 
 //   riscv_crypto_sbox_aes_out taint module
 module riscv_crypto_sbox_aes_out_t(
-input   x_t    ,
-output  y_t
+input   x    ,
+output  y
 );
-assign y_t = x_t;
+assign y = x;
 endmodule
 
 
@@ -300,11 +300,11 @@ endmodule
 
 //  riscv_crypto_sbox_aesi_top taint module
 module riscv_crypto_sbox_aesi_top_t(
-output  y_t   ,
-input   x_t
+output  y  ,
+input   x
 );
 
-assign y_t = x_t;
+assign y = x;
 
 endmodule
 
@@ -358,11 +358,11 @@ endmodule
 
 // riscv_crypto_sbox_aesi_out taint module
 module riscv_crypto_sbox_aesi_out_t(
-output  y_t    ,
-input   x_t
+output  y    ,
+input   x
 );
 
-assign y_t = x_t;
+assign y = x;
 
 endmodule
 
@@ -493,7 +493,7 @@ module riscv_crypto_aes_inv_sbox (
     wire t2_t;
 
     riscv_crypto_sbox_aesi_top top ( .y(t1), .x(in) );
-    riscv_crypto_sbox_aesi_top_t top_t(.y(t1_t), .x(in_t));
+    riscv_crypto_sbox_aesi_top_t top_t( .y(t1_t), .x(in_t) );
     riscv_crypto_sbox_inv_mid mid  ( .y(t2), .x(t1) );
     riscv_crypto_sbox_inv_mid_t mid_t  ( .y(t2_t), .x(t1_t) );
     riscv_crypto_sbox_aesi_out out ( .y(fx), .x(t2) );
