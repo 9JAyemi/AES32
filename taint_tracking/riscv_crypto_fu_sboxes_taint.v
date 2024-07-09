@@ -104,6 +104,16 @@ output  [17:0] y
 
 endmodule
 
+//  riscv_crypto_sbox_inv_mid taint module
+module riscv_crypto_sbox_inv_mid_t(
+input   [20:0] x_t    ,
+output  [17:0] y_t
+);
+
+assign y_t = x_t;
+
+endmodule
+
 //
 //    top (inner) linear layer for AES
 module riscv_crypto_sbox_aes_top(
@@ -163,6 +173,15 @@ output  [20:0] y
 
 endmodule
 
+// riscv_crypto_sbox_aes_top taint module
+module riscv_crypto_sbox_aes_top_t(
+input   x_t    ,
+output  y_t
+);
+
+assign y_t = x_t;
+endmodule
+
 
 //
 //    bottom (outer) linear layer for AES
@@ -210,6 +229,14 @@ output  [ 7:0] y
     assign    y[6] = t16 ^~ t26;
     assign    y[7] = t6 ^   t24;
 
+endmodule
+
+//   riscv_crypto_sbox_aes_out taint module
+module riscv_crypto_sbox_aes_out_t(
+input   x_t    ,
+output  y_t
+);
+assign y_t = x_t;
 endmodule
 
 
@@ -442,14 +469,11 @@ module riscv_crypto_aes_inv_sbox (
 
     wire [20:0] t1;
     wire [17:0] t2;
-    wire [7:0] fxt;
-    wire [7:0] inpt;
+    wire t1_t;
+    wire t2_t
 
-    assign fx_t = fxt[0];
-    assign inpt = {{7{in_t}}, in_t};
-
-    riscv_crypto_sbox_aesi_top top ( .y(t1), .x(inpt) );
-    riscv_crypto_sbox_aesi_top top_t(.y(t1), .x(inpt));
+    riscv_crypto_sbox_aesi_top top ( .y(t1), .x(in) );
+    riscv_crypto_sbox_aesi_top top_t(.y(t1), .x(in_t));
     riscv_crypto_sbox_inv_mid mid  ( .y(t2), .x(t1) );
     riscv_crypto_sbox_aesi_out out ( .y(fx), .x(t2) );
     riscv_crypto_sbox_aesi_out out_t ( .y(fxt), .x(t2));
@@ -466,18 +490,16 @@ module riscv_crypto_aes_fwd_sbox (
 );
 
     wire [20:0] t1;
+    wire t1_t;
     wire [17:0] t2;
-    wire [7:0] fxt;
-    wire [7:0] inpt;
-
-    assign fx_t = fxt[0];
-    assign inpt = {{7{in_t}}, in_t};
+    wire t2_t;
     
     riscv_crypto_sbox_aes_top top ( .y(t1), .x(in) );
-    riscv_crypto_sbox_aes_top top_t (.y(t1), .x(inpt));
+    riscv_crypto_sbox_aes_top_t top_t (.y_t(t1), .x_t(in_t));
     riscv_crypto_sbox_inv_mid mid ( .y(t2), .x(t1) );
+    riscv_crypto_sbox_inv_mid_t mid_t ( .y_t(t2_t), .x_t(t1_t) );
     riscv_crypto_sbox_aes_out out ( .y(fx), .x(t2) );
-    riscv_crypto_sbox_aes_out out_t(.y(fxt), .x(t2)); //questioning if this is right implementation
+    riscv_crypto_sbox_aes_out_t out_t(.y_t(fx_t), .x_t(t2_t)); 
 
 
 endmodule
