@@ -6,7 +6,7 @@ clock -none
 reset -none
 
 
-# check once the computation is finsihed that there is no information to the registar where data is stored
+# check once the computation is finsihed that there is no information leak to the registar where data is stored
 assume {rs1_t == 1}
 assert {ready -> !rd_t}
 
